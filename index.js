@@ -1,7 +1,11 @@
 const express = require('express');
-const exphbs = require('express-handlebars');
 const app = express();
-const path = require("path");
+const path = require('path');
+const mongoose = require('mongoose');
+const Handlebars = require('handlebars')
+const exphbs = require('express-handlebars')
+const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access');
+const User = require('./models/user')
 
 //routes
 const homeRoutes = require('./routes/home');
@@ -10,16 +14,26 @@ const cardRoutes = require('./routes/card');
 const coursesRoutes = require('./routes/courses');
 
 
+//add handlebars
 const hbs = exphbs.create({
     defaultLayout: 'main',
-    extname: 'hbs'
+    extname: 'hbs',
+    handlebars: allowInsecurePrototypeAccess(Handlebars)
 })
-
-//add handlebars
 app.engine('hbs', hbs.engine)
 app.set('view engine', 'hbs')
 app.set('views', 'views')
 
+
+app.use(async (req, res, next) => {
+    try {
+        const user = await User.findById('61daba95f3b1fc0dde4aabce');
+        req.user = user;
+        next();
+    } catch (e) {
+        console.log(e)
+    }
+})
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.urlencoded({extended: true}))
@@ -29,8 +43,31 @@ app.use('/courses', coursesRoutes);
 app.use('/card', cardRoutes);
 
 
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${3000}`)
-});
+
+async function start() {
+    try {
+        const url = `mongodb+srv://egor:3Yhy2yvsXr7R33ps@cluster0.jgjxf.mongodb.net/shop`
+        await mongoose.connect(url, {
+            useNewUrlParser: true
+        });
+        const candidate = await User.findOne();
+        if (!candidate) {
+            const user = new User({
+                email: 'test@gmail.com',
+                name: 'test',
+                cart: {
+                    items: []
+                }
+            })
+            await user.save();
+        }
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${3000}`)
+        });
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+start();
