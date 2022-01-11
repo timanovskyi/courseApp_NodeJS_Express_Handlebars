@@ -1,29 +1,29 @@
 const {Schema, model} = require('mongoose');
 
 const user = new Schema({
-   email: {
-       type: String,
-       required: true
-   },
+    email: {
+        type: String,
+        required: true
+    },
     name: {
         type: String,
         required: true
     },
     cart: {
-       items: [
-           {
-               count: {
-                   type: Number,
-                   required: true,
-                   default: 1
-               },
-               courseId: {
-                   type: Schema.Types.ObjectId,
-                   required: true,
-                   ref: 'Course'
-               }
-           }
-       ]
+        items: [
+            {
+                count: {
+                    type: Number,
+                    required: true,
+                    default: 1
+                },
+                courseId: {
+                    type: Schema.Types.ObjectId,
+                    required: true,
+                    ref: 'Course'
+                }
+            }
+        ]
     }
 })
 
@@ -44,6 +44,12 @@ user.methods.addToCart = function (course) {
     this.cart = {items};
 
     return this.save();
+}
+
+user.methods.clearCart = function () {
+    this.cart = {items: []};
+    return this.save();
+
 }
 
 user.methods.removeFromCart = function (id) {
