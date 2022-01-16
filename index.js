@@ -9,6 +9,8 @@ const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-acce
 const app = express();
 const session = require('express-session');
 const MongoStore = require('connect-mongodb-session')(session);
+const helmet = require('helmet')
+const compression = require('compression')
 
 const varMiddleware = require('./middleware/variables')
 const userMiddleware = require('./middleware/user')
@@ -60,6 +62,8 @@ app.use(csrf())
 app.use(flash())
 app.use(varMiddleware);
 app.use(userMiddleware);
+app.use(helmet());
+app.use(compression());
 
 //app use routers
 app.use('/', homeRoutes);
